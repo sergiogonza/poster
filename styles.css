@@ -1,0 +1,88 @@
+:root {
+  --bg: #121212;
+  --mask-size: 0px;
+  --x: 0px;
+  --y: 0px;
+}
+
+/* ----- HERO ----- */
+body {
+  margin: 0;
+  background: #000;
+  color: white;
+  font-family: Arial, sans-serif;
+}
+
+.hero {
+  height: 100vh;
+  background: #181818;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.logo {
+  width: 120px;
+  margin-bottom: 20px;
+}
+
+.hero-content {
+  text-align: center;
+  z-index: 2;
+}
+
+/* ----- EFECTO MÁSCARA ----- */
+
+.cursor-mask {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(
+    circle at var(--x) var(--y),
+    rgba(255, 255, 255, 1) var(--mask-size),
+    transparent 0
+  );
+  mix-blend-mode: difference;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .4s ease-out;
+}
+
+/* ----- PDF CANVAS ----- */
+
+#pdf-section {
+  background: #ffffff;
+  padding: 40px 0;
+  text-align: center;
+}
+
+#pdf-canvas {
+  max-width: 100%;
+  width: 90%;
+  height: auto;
+  box-shadow: 0 0 20px rgba(0,0,0,0.2);
+}
+
+/* ----- BOTÓN VERDE ----- */
+
+.download-box {
+  margin-top: 25px;
+}
+
+.download-btn {
+  background: #18c964;
+  padding: 15px 30px;
+  font-size: 20px;
+  border-radius: 12px;
+  color: white;
+  text-decoration: none;
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+  transition: background .3s;
+}
+
+.download-btn:hover {
+  background: #15a653;
+}
