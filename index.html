@@ -3,134 +3,216 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Landing Animada con PDF</title>
+<title>Proyecto Sustentable – Presentación</title>
+
+<!-- GSAP -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
 
 <!-- PDF.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.min.js"></script>
 
-<!-- GSAP + ScrollTrigger -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-
 <style>
-    body {
-        margin: 0;
-        font-family: Arial, sans-serif;
-        overflow-x: hidden;
-        background: #f0f0f0;
-    }
+:root {
+  --bg: #0d1f0f;
+  --green-light: #98ffa0;
+  --green-strong: #2ecc71;
+  --green-dark: #0c5c2c;
+}
 
-    /* HERO SECTION */
-    .hero {
-        height: 100vh;
-        background: linear-gradient(135deg, #000000, #222222);
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        color: white;
-        text-align: center;
-        opacity: 0;
-    }
+body {
+  margin: 0;
+  font-family: "Arial", sans-serif;
+  overflow-x: hidden;
+  background: var(--bg);
+  color: white;
+}
 
-    .hero img {
-        width: 200px;
-        max-width: 70%;
-        margin-bottom: 20px;
-        opacity: 0;
-    }
+/* SECCIÓN REVEAL */
+.bg {
+  background-color: var(--bg);
+  position: relative;
+  overflow: hidden;
+}
 
-    /* PDF VIEWER */
-    #pdf-section {
-        padding: 50px 0;
-        background: #ffffff;
-    }
+p {
+  text-transform: uppercase;
+  font-weight: bold;
+  font-size: clamp(1.8rem, 4vw, 3.5rem);
+  line-height: 1.2;
+}
 
-    #pdf-viewer {
-        width: 90%;
-        max-width: 900px;
-        margin: auto;
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 4px 30px rgba(0,0,0,0.15);
-        opacity: 0;
-    }
+.content p {
+  background: linear-gradient(45deg, var(--green-light), var(--green-strong));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Capa oculta estilo reveal */
+.hidden-content {
+  --x: 0px;
+  --y: 0px;
+  --size: 5px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, #baffc0, #5cd975, #0c5c2c);
+  color: var(--bg);
+  --mask: radial-gradient(circle at var(--x) var(--y), black var(--size), transparent 0);
+  -webkit-mask-image: var(--mask);
+  mask-image: var(--mask);
+  pointer-events: none;
+  visibility: hidden;
+}
+
+/* PDF VIEWER */
+#pdf-holder {
+  width: 90%;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px 0;
+  display: flex;
+  justify-content: center;
+}
+
+#pdf-canvas {
+  width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 4px 30px rgba(0,0,0,0.4);
+  background: white;
+}
+
+/* Texto final */
+#final-text p {
+  text-align: center;
+  background: linear-gradient(45deg, var(--green-strong), #b6ffb0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-top: 100px;
+  margin-bottom: 200px;
+}
 </style>
 </head>
 
 <body>
 
-<!-- HERO -->
-<section class="hero">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg" alt="Logo">
-    <h1>Bienvenido a la Presentación</h1>
-</section>
+<div class="bg">
 
-<!-- PDF SECTION -->
-<section id="pdf-section">
-    <div id="pdf-viewer">
-        <canvas id="pdf-canvas" style="width: 100%;"></canvas>
+  <!-- CONTENIDO SUPERIOR -->
+  <div class="content">
+    <div class="container">
+      <div class="row justify-content-center align-items-center min-vh-100">
+        <p class="display-3 fw-bold text-center">
+          Bienvenido a nuestro proyecto sustentable
+        </p>
+      </div>
+
+      <!-- PDF CENTRADO -->
+      <div id="pdf-holder">
+        <canvas id="pdf-canvas"></canvas>
+      </div>
+
+      <!-- TEXTO FINAL -->
+      <div id="final-text">
+        <p class="display-3 fw-bold text-center">
+          ¡Gracias por visitarnos!  
+          <br>  
+          Te esperamos pronto.
+        </p>
+      </div>
+
     </div>
-</section>
+  </div>
 
+  <!-- CAPA REVEAL -->
+  <div class="hidden-content"></div>
+
+</div>
+
+
+<!-- =============================
+         JAVASCRIPT
+================================ -->
 <script>
-/* =====================================================
-   GSAP ANIMACIONES
-===================================================== */
-gsap.registerPlugin(ScrollTrigger);
-
-// Animación del HERO
-gsap.to(".hero", { opacity: 1, duration: 1.2, ease: "power2.out" });
-gsap.to(".hero img", { opacity: 1, y: -20, duration: 1.5, delay: 0.4, ease: "power2.out" });
-
-// Parallax suave al hacer scroll
-gsap.to(".hero img", {
-    y: -80,
-    scrollTrigger: {
-        trigger: ".hero",
-        start: "top top",
-        end: "bottom top",
-        scrub: true
-    }
-});
-
-// Fade-in del contenedor del PDF
-gsap.to("#pdf-viewer", {
-    opacity: 1,
-    duration: 1.4,
-    ease: "power2.out",
-    scrollTrigger: {
-        trigger: "#pdf-section",
-        start: "top 80%"
-    }
-});
+console.clear();
 
 /* =====================================================
-   PDF.js — CARGAR PDF DENTRO DE LA MISMA PÁGINA
+   GSAP MÁSCARA ANIMADA
+===================================================== */
+const content = document.querySelector(".content");
+let xTo = gsap.quickTo(".hidden-content", "--x", { duration: 0.4, ease: "power4.out" }),
+    yTo = gsap.quickTo(".hidden-content", "--y", { duration: 0.4, ease: "power4.out" });
+
+let tl = gsap.timeline({ paused: true });
+tl.to(".hidden-content", {
+  "--size": 280,
+  duration: 0.8,
+  ease: "back.out(1.7)"
+});
+
+const hoverTargets = gsap.utils.toArray("p", content);
+hoverTargets.forEach((el) => {
+  el.addEventListener("mouseenter", () => tl.restart());
+  el.addEventListener("mouseleave", () => tl.reverse());
+});
+
+/* Activar efecto al mover el mouse */
+window.addEventListener("mousemove", function initialMove(e) {
+  window.removeEventListener("mousemove", initialMove);
+  gsap.set(".hidden-content", { autoAlpha: 1, "--x": e.pageX, "--y": e.pageY });
+  window.addEventListener("mousemove", (e) => {
+    yTo(e.pageY);
+    xTo(e.pageX);
+  });
+});
+
+/* =====================================================
+   PDF.js — CARGAR PDF EN ALTA RESOLUCIÓN
 ===================================================== */
 
-// URL RAW CORRECTA DE TU PDF EN GITHUB 👇👇👇
-const pdfUrl = "https://raw.githubusercontent.com/sergiogonza/poster/main/assets/poster_compressed.pdf";
-
-// Inicialización
+const url = "https://raw.githubusercontent.com/sergiogonza/poster/main/assets/poster_compressed.pdf";
 pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js";
 
 const canvas = document.getElementById("pdf-canvas");
 const ctx = canvas.getContext("2d");
 
-// Cargar PDF
-pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
-    pdf.getPage(1).then(page => {
-        const viewport = page.getViewport({ scale: 1.5 });
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
+pdfjsLib.getDocument(url).promise.then(pdf => {
+  pdf.getPage(1).then(page => {
+    const scale = 2.8; // ALTA RESOLUCIÓN
+    const viewport = page.getViewport({ scale });
 
-        // Renderizar PDF
-        page.render({
-            canvasContext: ctx,
-            viewport: viewport
-        });
-    });
+    canvas.height = viewport.height;
+    canvas.width = viewport.width;
+
+    page.render({ canvasContext: ctx, viewport });
+  });
+});
+
+/* =====================================================
+   FADE-IN AL HACER SCROLL
+===================================================== */
+gsap.from("#pdf-holder", {
+  opacity: 0,
+  y: 60,
+  duration: 1.3,
+  ease: "power3.out",
+  scrollTrigger: {
+    trigger: "#pdf-holder",
+    start: "top 85%"
+  }
+});
+
+gsap.from("#final-text", {
+  opacity: 0,
+  y: 80,
+  duration: 1.4,
+  ease: "power3.out",
+  scrollTrigger: {
+    trigger: "#final-text",
+    start: "top 90%"
+  }
 });
 </script>
 
