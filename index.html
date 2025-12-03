@@ -1,170 +1,46 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Landing Reveal + PDF</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>Landing PDF Animada</title>
 
 <!-- GSAP -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 
 <!-- PDF.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
-<style>
-:root {
-  --bg: #0f1f14;
-  --green1: #8aff97;
-  --green2: #4cd96a;
-  --green3: #0c5c2c;
-}
-
-body {
-  margin: 0;
-  background: var(--bg);
-  overflow-x: hidden;
-  font-family: Arial, sans-serif;
-}
-
-.bg {
-  position: relative;
-  overflow: hidden;
-  background: var(--bg);
-}
-
-/* Texto normal */
-.content p {
-  text-transform: uppercase;
-  font-weight: bold;
-  font-size: clamp(1.8rem, 4vw, 3.5rem);
-  text-align: center;
-  background: linear-gradient(45deg, var(--green1), var(--green2));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* Texto oculto */
-.hidden-content {
-  --x: 0px;
-  --y: 0px;
-  --size: 5px;
-  position: absolute;
-  inset: 0;
-  visibility: hidden;
-  pointer-events: none;
-
-  background: linear-gradient(180deg, #baffc0, #63dc85, #0c5c2c);
-  color: var(--bg);
-
-  --mask: radial-gradient(circle at var(--x) var(--y), black var(--size), transparent 0);
-  mask-image: var(--mask);
-  -webkit-mask-image: var(--mask);
-}
-
-.hidden-content p {
-  font-size: clamp(1.8rem, 4vw, 3.5rem);
-  font-weight: bold;
-  text-align: center;
-  margin: 40px 0;
-}
-
-/* PDF */
-#pdf-holder {
-  width: 90%;
-  max-width: 950px;
-  margin: 100px auto;
-}
-
-#pdf-canvas {
-  width: 100%;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 30px rgba(0,0,0,0.4);
-}
-</style>
+<link rel="stylesheet" href="styles.css" />
 </head>
 
 <body>
 
-<div class="bg">
-
-  <!-- CAPA 1: TEXTO ORIGINAL -->
-  <div class="content">
-    <p>Bienvenido al proyecto sustentable</p>
-
-    <!-- PDF -->
-    <div id="pdf-holder">
-      <canvas id="pdf-canvas"></canvas>
+<!-- PRIMERA PANTALLA -->
+<section class="hero">
+    <div class="hero-content">
+        <img src="logo.png" class="logo" />
+        <h1>Bienvenido</h1>
+        <p>Desliza hacia abajo</p>
     </div>
 
-    <p>Explora nuestras ideas verdes</p>
-  </div>
+    <!-- efecto de máscara -->
+    <div class="cursor-mask"></div>
+</section>
 
-  <!-- CAPA 2: TEXTO REVELADO -->
-  <div class="hidden-content">
-    <p>El futuro es sustentable… si lo hacemos juntos.</p>
-    <p>Gracias por apoyar la innovación ecológica.</p>
-  </div>
+<!-- VISOR PDF -->
+<section id="pdf-section">
+    <canvas id="pdf-canvas"></canvas>
 
-</div>
+    <div class="download-box">
+        <a href="TU_PDF.pdf" download class="download-btn">
+            Descargar PDF
+        </a>
+    </div>
+</section>
 
-<script>
-console.clear();
-
-const content = document.querySelector(".content");
-let xTo = gsap.quickTo(".hidden-content", "--x", { duration: 0.4, ease: "power4.out" });
-let yTo = gsap.quickTo(".hidden-content", "--y", { duration: 0.4, ease: "power4.out" });
-
-// Timeline del círculo
-let tl = gsap.timeline({ paused: true });
-tl.to(".hidden-content", {
-  "--size": 260,
-  duration: 0.75,
-  ease: "back.out(1.7)"
-});
-
-// Activar efecto al pasar sobre textos
-gsap.utils.toArray(".content p").forEach((el) => {
-  el.addEventListener("mouseenter", () => tl.restart());
-  el.addEventListener("mouseleave", () => tl.reverse());
-});
-
-// Activar máscara al primer movimiento de mouse
-window.addEventListener("mousemove", onFirstMove);
-function onFirstMove(e) {
-  window.removeEventListener("mousemove", onFirstMove);
-  gsap.set(".hidden-content", { autoAlpha: 1, "--x": e.pageX, "--y": e.pageY });
-
-  window.addEventListener("mousemove", (e) => {
-    yTo(e.pageY);
-    xTo(e.pageX);
-  });
-}
-
-/* =====================================================
-   PDF.js — CARGA DEL PDF
-===================================================== */
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js";
-
-// URL RAW CORRECTA
-const pdfURL = "https://raw.githubusercontent.com/sergiogonza/poster/main/assets/poster_compressed.pdf";
-
-const canvas = document.getElementById("pdf-canvas");
-const ctx = canvas.getContext("2d");
-
-pdfjsLib.getDocument(pdfURL).promise.then(pdf => {
-  pdf.getPage(1).then(page => {
-    const scale = 2.5;
-    const viewport = page.getViewport({ scale });
-
-    canvas.height = viewport.height;
-    canvas.width = viewport.width;
-
-    page.render({ canvasContext: ctx, viewport });
-  });
-});
-</script>
-
+<script src="script.js"></script>
 </body>
 </html>
