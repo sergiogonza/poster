@@ -1,195 +1,283 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Landing Reveal + Poster</title>
 
   <!-- GSAP -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 
   <style>
-    :root {
+    :root{
       --bg: #0f1f14;
       --green1: #98ffae;
       --green2: #4cd96a;
       --green3: #0c5c2c;
-
-      --glow: 0 0 15px rgba(76, 217, 106, 0.4);
-      --text-size: clamp(1.8rem, 4vw, 3.2rem);
+      --glow: 0 0 15px rgba(76,217,106,0.35);
+      --text-size: clamp(1.6rem, 4vw, 2.6rem);
     }
 
-    body {
-      margin: 0;
-      font-family: "Inter", Arial, sans-serif;
-      background: var(--bg);
-      color: white;
-      overflow-x: hidden;
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter, Arial, sans-serif;
+      background:var(--bg);
+      color:#fff;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      overflow-x:hidden;
     }
 
-    .bg {
-      position: relative;
-      overflow: hidden;
-      padding-top: 70px;
-      padding-bottom: 110px;
+    .bg{
+      position:relative;
+      overflow:hidden;
+      padding-top:50px;
+      padding-bottom:90px;
     }
 
-    .content p {
-      text-transform: uppercase;
-      font-weight: 700;
-      font-size: var(--text-size);
-      text-align: center;
-      margin: 80px 25px;
-      cursor: pointer;
-      background: linear-gradient(45deg, var(--green1), var(--green2));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      transition: transform 0.25s ease;
-    }
-    .content p:hover {
-      transform: scale(1.05);
-      filter: drop-shadow(var(--glow));
+    /* Textos (arriba/abajo) - dos palabras cada uno */
+    .content{
+      max-width:1200px;
+      margin:0 auto;
+      padding:0 18px;
     }
 
-    /* Reveal Layer */
-    .hidden-content {
+    .content .top-text,
+    .content .bottom-text {
+      text-transform:uppercase;
+      font-weight:800;
+      font-size:var(--text-size);
+      text-align:center;
+      margin:36px 0;
+      cursor:pointer;
+      background:linear-gradient(45deg, var(--green1), var(--green2));
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      transition:transform .22s ease;
+      user-select:none;
+    }
+    .content .top-text:hover,
+    .content .bottom-text:hover{
+      transform:translateY(-4px) scale(1.03);
+      filter:drop-shadow(var(--glow));
+    }
+
+    /* Holder (el "recuadro blanco") */
+    #poster-holder{
+      width:92%;
+      max-width:1000px;
+      margin: 10px auto 18px;
+      border-radius:14px;
+      overflow:hidden;
+      background:#fff;
+      box-shadow:0 10px 40px rgba(0,0,0,0.45);
+      display:block;
+    }
+
+    /* Aquí se verá la imagen (siempre en el recuadro blanco) */
+    #poster-img{
+      display:block;
+      width:100%;
+      height:auto;
+      object-fit:cover;
+      -webkit-user-drag: none;
+      -webkit-user-select: none;
+      user-select: none;
+      transition:transform .28s ease, box-shadow .28s ease;
+    }
+    #poster-img:hover{
+      transform:scale(1.01);
+      box-shadow:0 0 60px rgba(76,217,106,0.18);
+    }
+
+    /* Botón de descarga (verde) */
+    .download-wrap{ text-align:center; margin-top:16px; margin-bottom:36px; }
+    .download-btn{
+      display:inline-block;
+      background:linear-gradient(45deg,var(--green2),var(--green3));
+      color:#fff;
+      padding:12px 28px;
+      border-radius:12px;
+      font-weight:700;
+      font-size:1.05rem;
+      text-decoration:none;
+      box-shadow:0 6px 22px rgba(0,0,0,0.35), var(--glow);
+      transition:transform .18s ease, box-shadow .18s ease;
+    }
+    .download-btn:hover{ transform:scale(1.06); box-shadow:0 10px 30px rgba(0,0,0,0.45), 0 0 30px rgba(76,217,106,0.45); }
+
+    /* Capa reveal circular */
+    .hidden-content{
       --x: 0px;
       --y: 0px;
       --size: 5px;
-      position: absolute;
-      inset: 0;
-      visibility: hidden;
-      pointer-events: none;
-      background: linear-gradient(180deg, #c8ffd2, #63dc85, #0c5c2c);
-      color: var(--bg);
-
-      --mask: radial-gradient(circle at var(--x) var(--y), black var(--size), transparent 0);
-      mask-image: var(--mask);
-      -webkit-mask-image: var(--mask);
-
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      visibility:hidden;
       display:flex;
       flex-direction:column;
-      justify-content:center;
+      justify-content:flex-start; /* aparece más arriba */
       align-items:center;
-      padding:60px 20px;
+      padding-top:44px; /* más arriba */
       text-align:center;
+      background: linear-gradient(180deg,#c8ffd2,#63dc85,#0c5c2c);
+      color:var(--bg);
+      --mask: radial-gradient(circle at var(--x) var(--y), black var(--size), transparent 0);
+      -webkit-mask-image:var(--mask);
+      mask-image:var(--mask);
     }
 
-    .hidden-content p {
-      font-size: var(--text-size);
-      margin: 40px 20px;
-      font-weight: bold;
-      max-width: 900px;
+    .hidden-content .msg {
+      color:var(--bg);
+      font-weight:900;
+      font-size:clamp(1.4rem, 3.5vw, 2.4rem);
+      margin:8px 12px;
+      letter-spacing:0.6px;
+      max-width:1000px;
     }
 
-    /* IMAGEN POSTER */
-    #poster-holder {
-      width: 92%;
-      max-width: 1000px;
-      margin: auto;
-      margin-top: 60px;
-      margin-bottom: 40px;
-    }
-
-    #poster-img {
-      width: 100%;
-      border-radius: 14px;
-      display: block;
-      background: white;
-      box-shadow: 0 0 40px rgba(0,0,0,0.45);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    #poster-img:hover {
-      transform: scale(1.015);
-      box-shadow: 0 0 60px rgba(76, 217, 106, 0.45);
-    }
-
-    /* BOTÓN DESCARGAR */
-    .download-btn {
-      display: inline-block;
-      margin: 25px auto 80px;
-      padding: 15px 32px;
-      font-size: 1.3rem;
-      font-weight: bold;
-      color: white;
-      background: linear-gradient(45deg, var(--green2), var(--green3));
-      border-radius: 12px;
-      text-decoration: none;
-      box-shadow: var(--glow);
-      transition: transform .25s ease, box-shadow .25s ease;
-    }
-
-    .download-btn:hover {
-      transform: scale(1.08);
-      box-shadow: 0 0 25px rgba(76, 217, 106, 0.75);
+    /* Ajustes responsive para texto aún más compacto en pantallas pequeñas */
+    @media (max-width:480px){
+      .content .top-text, .content .bottom-text{ font-size:1.4rem; margin:28px 12px; }
+      .hidden-content .msg{ font-size:1.2rem; }
+      #poster-holder{ width:95%; }
     }
   </style>
 </head>
-
 <body>
 
 <div class="bg">
 
   <div class="content">
-    <p>Bienvenido al proyecto sustentable</p>
+    <!-- TEXTO ARRIBA: dos palabras -->
+    <div class="top-text" id="topText">Proyecto Verde</div>
 
-    <!-- IMAGEN SUPER LIGERA -->
-    <div id="poster-holder">
-      <img id="poster-img" src="https://raw.githubusercontent.com/sergiogonza/poster/main/assets/poster.jpg" alt="Poster sustentable">
+    <!-- RECUADRO BLANCO: aquí va la imagen poster.jpg -->
+    <div id="poster-holder" aria-hidden="false">
+      <img id="poster-img"
+           src="https://raw.githubusercontent.com/sergiogonza/poster/main/assets/poster.jpg"
+           alt="Poster sustentable - vista previa" />
     </div>
 
-    <!-- BOTÓN DESCARGA -->
-    <div style="text-align:center;">
-      <a class="download-btn" href="https://raw.githubusercontent.com/sergiogonza/poster/main/assets/poster_compressed.pdf" download>
-        Descargar PDF
+    <!-- BOTÓN DESCARGA: descarga el poster (PDF) desde assets -->
+    <div class="download-wrap">
+      <a class="download-btn"
+         id="downloadBtn"
+         href="https://raw.githubusercontent.com/sergiogonza/poster/main/assets/poster_compressed.pdf"
+         download="poster_compressed.pdf">
+        Descargar poster
       </a>
     </div>
 
-    <p>Explora nuestras ideas verdes</p>
+    <!-- TEXTO ABAJO: dos palabras -->
+    <div class="bottom-text" id="bottomText">Explora Más</div>
   </div>
 
-  <!-- CAPA REVEAL -->
-  <div class="hidden-content">
-    <p>El futuro es sustentable… si lo construimos juntos.</p>
-    <p>Gracias por impulsar la innovación verde.</p>
+  <!-- CAPA REVELADORA (circular) -->
+  <div class="hidden-content" id="hiddenLayer" aria-hidden="true">
+    <div class="msg" id="hiddenMsg">Innovación Verde</div>
   </div>
 
 </div>
 
 <script>
-console.clear();
+/* ============================
+   PRELOAD IMAGEN (para rapidez)
+   ============================ */
+(function preloadImage(url){
+  const img = new Image();
+  img.src = url;
+})( "https://raw.githubusercontent.com/sergiogonza/poster/main/assets/poster.jpg" );
 
-/* --------------------------
-      REVEAL CIRCULAR
---------------------------- */
-const content = document.querySelector(".content");
+/* ============================
+   CONFIGURACIÓN GSAP / REVEAL
+   ============================ */
+const hiddenLayer = document.getElementById("hiddenLayer");
+const hiddenMsg   = document.getElementById("hiddenMsg");
+const topText     = document.getElementById("topText");
+const bottomText  = document.getElementById("bottomText");
+const downloadBtn = document.getElementById("downloadBtn");
 
-let xTo = gsap.quickTo(".hidden-content", "--x", { duration: 0.4, ease: "power4.out" });
-let yTo = gsap.quickTo(".hidden-content", "--y", { duration: 0.4, ease: "power4.out" });
+// quickTo para mover la máscara con alta performance
+const xTo = gsap.quickTo(hiddenLayer, "--x", { duration: 0.28, ease: "power3.out" });
+const yTo = gsap.quickTo(hiddenLayer, "--y", { duration: 0.28, ease: "power3.out" });
 
-let tl = gsap.timeline({ paused: true });
-tl.to(".hidden-content", {
-  "--size": 260,
-  duration: 0.75,
-  ease: "back.out(1.7)"
-});
+// timeline que abre la máscara (size)
+const tl = gsap.timeline({ paused:true });
+tl.to(hiddenLayer, { "--size": 240, duration: 0.65, ease: "back.out(1.6)" });
 
-gsap.utils.toArray(".content p").forEach((el) => {
-  el.addEventListener("mouseenter", () => tl.restart());
-  el.addEventListener("mouseleave", () => tl.reverse());
-});
+// Función de mostrar mensaje y activar timeline
+function revealWithMessage(message){
+  hiddenMsg.textContent = message;
+  // aseguramos visibilidad
+  gsap.set(hiddenLayer, { autoAlpha: 1 });
+  // reinicia la animación
+  tl.restart();
+}
 
-window.addEventListener("mousemove", function initialMove(e) {
-  window.removeEventListener("mousemove", initialMove);
-  gsap.set(".hidden-content", { autoAlpha: 1, "--x": e.pageX, "--y": e.pageY });
+// Función para ocultar (revert)
+function hideReveal(){
+  tl.reverse();
+}
 
-  window.addEventListener("mousemove", (e) => {
-    yTo(e.pageY);
-    xTo(e.pageX);
+/* ============================
+   Hover: TOP (muestra mensaje A)
+   ============================ */
+topText.addEventListener("mouseenter", () => revealWithMessage("Innovación Verde"));
+topText.addEventListener("mouseleave", () => hideReveal());
+
+/* ============================
+   Hover: BOTTOM (muestra mensaje B) - solo cuando se pone el puntero en las letras de abajo
+   ============================ */
+bottomText.addEventListener("mouseenter", () => revealWithMessage("Gracias"));
+bottomText.addEventListener("mouseleave", () => hideReveal());
+
+/* ============================
+   Mover máscara con mouse (global)
+   ============================ */
+function onFirstMove(e){
+  window.removeEventListener("mousemove", onFirstMove);
+  // mostrar la capa ocultada
+  gsap.set(hiddenLayer, { autoAlpha: 1, "--x": e.pageX, "--y": e.pageY });
+  window.addEventListener("mousemove", (ev) => {
+    yTo(ev.pageY);
+    xTo(ev.pageX);
+  });
+}
+window.addEventListener("mousemove", onFirstMove);
+
+/* ============================
+   Accessibility: permitir activar reveal con teclado (Enter / Space)
+   ============================ */
+[topText, bottomText].forEach(el => {
+  el.setAttribute("tabindex", "0"); // focusable
+  el.addEventListener("focus", () => {
+    // mostrar mensaje según elemento
+    if(el === topText) revealWithMessage("Innovación Verde");
+    if(el === bottomText) revealWithMessage("Gracias");
+  });
+  el.addEventListener("blur", hideReveal);
+
+  el.addEventListener("keydown", (e) => {
+    if(e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      if(el === topText) revealWithMessage("Innovación Verde");
+      if(el === bottomText) revealWithMessage("Gracias");
+    }
   });
 });
-</script>
 
+/* ============================
+   Pequeño ajuste: al hacer scroll ocultar reveal
+   ============================ */
+let lastScroll = 0;
+window.addEventListener("scroll", () => {
+  // si hay scroll, cerramos la máscara
+  if(Math.abs(window.scrollY - lastScroll) > 5) hideReveal();
+  lastScroll = window.scrollY;
+});
+</script>
 </body>
 </html>
