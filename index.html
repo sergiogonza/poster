@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Landing Animada con PDF</title>
+
+<!-- PDF.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.min.js"></script>
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        overflow-x: hidden;
+        background: #f0f0f0;
+    }
+
+    /* HERO SECTION */
+    .hero {
+        height: 100vh;
+        background: linear-gradient(135deg, #000000, #222222);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        text-align: center;
+        opacity: 0;
+    }
+
+    .hero img {
+        width: 200px;
+        max-width: 70%;
+        margin-bottom: 20px;
+        opacity: 0;
+    }
+
+    /* PDF VIEWER */
+    #pdf-section {
+        padding: 50px 0;
+        background: #ffffff;
+    }
+
+    #pdf-viewer {
+        width: 90%;
+        max-width: 900px;
+        margin: auto;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 30px rgba(0,0,0,0.15);
+        opacity: 0;
+    }
+</style>
+</head>
+
+<body>
+
+<!-- HERO -->
+<section class="hero">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg" alt="Logo">
+    <h1>Bienvenido a la Presentación</h1>
+</section>
+
+<!-- PDF SECTION -->
+<section id="pdf-section">
+    <div id="pdf-viewer">
+        <canvas id="pdf-canvas" style="width: 100%;"></canvas>
+    </div>
+</section>
+
+<script>
+/* =====================================================
+   GSAP ANIMACIONES
+===================================================== */
+gsap.registerPlugin(ScrollTrigger);
+
+// Animación del HERO
+gsap.to(".hero", { opacity: 1, duration: 1.2, ease: "power2.out" });
+gsap.to(".hero img", { opacity: 1, y: -20, duration: 1.5, delay: 0.4, ease: "power2.out" });
+
+// Parallax suave al hacer scroll
+gsap.to(".hero img", {
+    y: -80,
+    scrollTrigger: {
+        trigger: ".hero",
+        start: "top top",
+        end: "bottom top",
+        scrub: true
+    }
+});
+
+// Fade-in del contenedor del PDF
+gsap.to("#pdf-viewer", {
+    opacity: 1,
+    duration: 1.4,
+    ease: "power2.out",
+    scrollTrigger: {
+        trigger: "#pdf-section",
+        start: "top 80%"
+    }
+});
+
+/* =====================================================
+   PDF.js — CARGAR PDF DENTRO DE LA MISMA PÁGINA
+===================================================== */
+
+// CAMBIA ESTA URL POR LA DE TU PDF EN GITHUB RAW 👇👇👇
+const pdfUrl = "https://raw.githubusercontent.com/tuusuario/tu-repo/main/archivo.pdf";
+
+// Inicialización
+pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js";
+
+const canvas = document.getElementById("pdf-canvas");
+const ctx = canvas.getContext("2d");
+
+// Cargar PDF
+pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
+    pdf.getPage(1).then(page => {
+        const viewport = page.getViewport({ scale: 1.5 });
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+
+        // Renderizar PDF
+        page.render({
+            canvasContext: ctx,
+            viewport: viewport
+        });
+    });
+});
+</script>
+
+</body>
+</html>
