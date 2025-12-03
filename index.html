@@ -3,13 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Landing Reveal + PDF</title>
+  <title>Landing Reveal + Poster</title>
 
   <!-- GSAP -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-
-  <!-- PDF.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.min.js"></script>
 
   <style>
     :root {
@@ -20,7 +17,6 @@
 
       --glow: 0 0 15px rgba(76, 217, 106, 0.4);
       --text-size: clamp(1.8rem, 4vw, 3.2rem);
-      --fade-speed: 0.3s;
     }
 
     body {
@@ -31,16 +27,13 @@
       overflow-x: hidden;
     }
 
-    /* CONTENEDOR PRINCIPAL */
     .bg {
       position: relative;
       overflow: hidden;
-      background: var(--bg);
       padding-top: 70px;
       padding-bottom: 110px;
     }
 
-    /* TEXTOS REVEAL */
     .content p {
       text-transform: uppercase;
       font-weight: 700;
@@ -58,7 +51,7 @@
       filter: drop-shadow(var(--glow));
     }
 
-    /* CAPA REVEAL */
+    /* Reveal Layer */
     .hidden-content {
       --x: 0px;
       --y: 0px;
@@ -89,8 +82,8 @@
       max-width: 900px;
     }
 
-    /* PDF */
-    #pdf-holder {
+    /* IMAGEN POSTER */
+    #poster-holder {
       width: 92%;
       max-width: 1000px;
       margin: auto;
@@ -98,28 +91,21 @@
       margin-bottom: 40px;
     }
 
-    #pdf-canvas {
+    #poster-img {
       width: 100%;
       border-radius: 14px;
+      display: block;
       background: white;
       box-shadow: 0 0 40px rgba(0,0,0,0.45);
-      display: block;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
-    #pdf-canvas:hover {
+    #poster-img:hover {
       transform: scale(1.015);
       box-shadow: 0 0 60px rgba(76, 217, 106, 0.45);
     }
 
-    .pdf-error {
-      color: #ff8a88;
-      text-align: center;
-      margin: 40px auto;
-      font-size: 1.4rem;
-    }
-
-    /* BOTÓN DESCARGAR PDF */
+    /* BOTÓN DESCARGAR */
     .download-btn {
       display: inline-block;
       margin: 25px auto 80px;
@@ -138,9 +124,9 @@
       transform: scale(1.08);
       box-shadow: 0 0 25px rgba(76, 217, 106, 0.75);
     }
-
   </style>
 </head>
+
 <body>
 
 <div class="bg">
@@ -148,11 +134,9 @@
   <div class="content">
     <p>Bienvenido al proyecto sustentable</p>
 
-    <div id="pdf-holder">
-      <canvas id="pdf-canvas"></canvas>
-      <div id="pdf-error" class="pdf-error" style="display:none;">
-        ⚠️ No se pudo cargar el PDF (verifica el enlace o permisos CORS)
-      </div>
+    <!-- IMAGEN SUPER LIGERA -->
+    <div id="poster-holder">
+      <img id="poster-img" src="https://raw.githubusercontent.com/sergiogonza/poster/main/assets/poster.jpg" alt="Poster sustentable">
     </div>
 
     <!-- BOTÓN DESCARGA -->
@@ -165,6 +149,7 @@
     <p>Explora nuestras ideas verdes</p>
   </div>
 
+  <!-- CAPA REVEAL -->
   <div class="hidden-content">
     <p>El futuro es sustentable… si lo construimos juntos.</p>
     <p>Gracias por impulsar la innovación verde.</p>
@@ -203,32 +188,6 @@ window.addEventListener("mousemove", function initialMove(e) {
     yTo(e.pageY);
     xTo(e.pageX);
   });
-});
-
-/* --------------------------
-            PDF.js
---------------------------- */
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js";
-
-const url = "https://raw.githubusercontent.com/sergiogonza/poster/main/assets/poster_compressed.pdf";
-const canvas = document.getElementById("pdf-canvas");
-const ctx = canvas.getContext("2d");
-
-// Renderizar PDF
-pdfjsLib.getDocument(url).promise.then(pdf => {
-  return pdf.getPage(1);
-}).then(page => {
-  const scale = 2.4;   // alta resolución pero ligera
-  const viewport = page.getViewport({ scale });
-
-  canvas.width = viewport.width;
-  canvas.height = viewport.height;
-
-  return page.render({ canvasContext: ctx, viewport }).promise;
-}).catch(error => {
-  console.error("Error al cargar/renderizar PDF:", error);
-  document.getElementById("pdf-error").style.display = "block";
 });
 </script>
 
