@@ -1,46 +1,236 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Landing Reveal + PDF</title>
 
-<title>Landing PDF Animada</title>
+  <!-- GSAP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 
-<!-- GSAP -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <!-- PDF.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.min.js"></script>
 
-<!-- PDF.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f1f14;
+      --green1: #98ffae;
+      --green2: #4cd96a;
+      --green3: #0c5c2c;
 
-<link rel="stylesheet" href="styles.css" />
+      --glow: 0 0 15px rgba(76, 217, 106, 0.4);
+      --text-size: clamp(1.8rem, 4vw, 3.2rem);
+      --fade-speed: 0.3s;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", Arial, sans-serif;
+      background: var(--bg);
+      color: white;
+      overflow-x: hidden;
+    }
+
+    /* CONTENEDOR PRINCIPAL */
+    .bg {
+      position: relative;
+      overflow: hidden;
+      background: var(--bg);
+      padding-top: 70px;
+      padding-bottom: 110px;
+    }
+
+    /* TEXTOS REVEAL */
+    .content p {
+      text-transform: uppercase;
+      font-weight: 700;
+      font-size: var(--text-size);
+      text-align: center;
+      margin: 80px 25px;
+      cursor: pointer;
+      background: linear-gradient(45deg, var(--green1), var(--green2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      transition: transform 0.25s ease;
+    }
+    .content p:hover {
+      transform: scale(1.05);
+      filter: drop-shadow(var(--glow));
+    }
+
+    /* CAPA REVEAL */
+    .hidden-content {
+      --x: 0px;
+      --y: 0px;
+      --size: 5px;
+      position: absolute;
+      inset: 0;
+      visibility: hidden;
+      pointer-events: none;
+      background: linear-gradient(180deg, #c8ffd2, #63dc85, #0c5c2c);
+      color: var(--bg);
+
+      --mask: radial-gradient(circle at var(--x) var(--y), black var(--size), transparent 0);
+      mask-image: var(--mask);
+      -webkit-mask-image: var(--mask);
+
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      padding:60px 20px;
+      text-align:center;
+    }
+
+    .hidden-content p {
+      font-size: var(--text-size);
+      margin: 40px 20px;
+      font-weight: bold;
+      max-width: 900px;
+    }
+
+    /* PDF */
+    #pdf-holder {
+      width: 92%;
+      max-width: 1000px;
+      margin: auto;
+      margin-top: 60px;
+      margin-bottom: 40px;
+    }
+
+    #pdf-canvas {
+      width: 100%;
+      border-radius: 14px;
+      background: white;
+      box-shadow: 0 0 40px rgba(0,0,0,0.45);
+      display: block;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    #pdf-canvas:hover {
+      transform: scale(1.015);
+      box-shadow: 0 0 60px rgba(76, 217, 106, 0.45);
+    }
+
+    .pdf-error {
+      color: #ff8a88;
+      text-align: center;
+      margin: 40px auto;
+      font-size: 1.4rem;
+    }
+
+    /* BOTÓN DESCARGAR PDF */
+    .download-btn {
+      display: inline-block;
+      margin: 25px auto 80px;
+      padding: 15px 32px;
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: white;
+      background: linear-gradient(45deg, var(--green2), var(--green3));
+      border-radius: 12px;
+      text-decoration: none;
+      box-shadow: var(--glow);
+      transition: transform .25s ease, box-shadow .25s ease;
+    }
+
+    .download-btn:hover {
+      transform: scale(1.08);
+      box-shadow: 0 0 25px rgba(76, 217, 106, 0.75);
+    }
+
+  </style>
 </head>
-
 <body>
 
-<!-- PRIMERA PANTALLA -->
-<section class="hero">
-    <div class="hero-content">
-        <img src="logo.png" class="logo" />
-        <h1>Bienvenido</h1>
-        <p>Desliza hacia abajo</p>
+<div class="bg">
+
+  <div class="content">
+    <p>Bienvenido al proyecto sustentable</p>
+
+    <div id="pdf-holder">
+      <canvas id="pdf-canvas"></canvas>
+      <div id="pdf-error" class="pdf-error" style="display:none;">
+        ⚠️ No se pudo cargar el PDF (verifica el enlace o permisos CORS)
+      </div>
     </div>
 
-    <!-- efecto de máscara -->
-    <div class="cursor-mask"></div>
-</section>
-
-<!-- VISOR PDF -->
-<section id="pdf-section">
-    <canvas id="pdf-canvas"></canvas>
-
-    <div class="download-box">
-        <a href="TU_PDF.pdf" download class="download-btn">
-            Descargar PDF
-        </a>
+    <!-- BOTÓN DESCARGA -->
+    <div style="text-align:center;">
+      <a class="download-btn" href="https://raw.githubusercontent.com/sergiogonza/poster/main/assets/poster_compressed.pdf" download>
+        Descargar PDF
+      </a>
     </div>
-</section>
 
-<script src="script.js"></script>
+    <p>Explora nuestras ideas verdes</p>
+  </div>
+
+  <div class="hidden-content">
+    <p>El futuro es sustentable… si lo construimos juntos.</p>
+    <p>Gracias por impulsar la innovación verde.</p>
+  </div>
+
+</div>
+
+<script>
+console.clear();
+
+/* --------------------------
+      REVEAL CIRCULAR
+--------------------------- */
+const content = document.querySelector(".content");
+
+let xTo = gsap.quickTo(".hidden-content", "--x", { duration: 0.4, ease: "power4.out" });
+let yTo = gsap.quickTo(".hidden-content", "--y", { duration: 0.4, ease: "power4.out" });
+
+let tl = gsap.timeline({ paused: true });
+tl.to(".hidden-content", {
+  "--size": 260,
+  duration: 0.75,
+  ease: "back.out(1.7)"
+});
+
+gsap.utils.toArray(".content p").forEach((el) => {
+  el.addEventListener("mouseenter", () => tl.restart());
+  el.addEventListener("mouseleave", () => tl.reverse());
+});
+
+window.addEventListener("mousemove", function initialMove(e) {
+  window.removeEventListener("mousemove", initialMove);
+  gsap.set(".hidden-content", { autoAlpha: 1, "--x": e.pageX, "--y": e.pageY });
+
+  window.addEventListener("mousemove", (e) => {
+    yTo(e.pageY);
+    xTo(e.pageX);
+  });
+});
+
+/* --------------------------
+            PDF.js
+--------------------------- */
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js";
+
+const url = "https://raw.githubusercontent.com/sergiogonza/poster/main/assets/poster_compressed.pdf";
+const canvas = document.getElementById("pdf-canvas");
+const ctx = canvas.getContext("2d");
+
+// Renderizar PDF
+pdfjsLib.getDocument(url).promise.then(pdf => {
+  return pdf.getPage(1);
+}).then(page => {
+  const scale = 2.4;   // alta resolución pero ligera
+  const viewport = page.getViewport({ scale });
+
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+
+  return page.render({ canvasContext: ctx, viewport }).promise;
+}).catch(error => {
+  console.error("Error al cargar/renderizar PDF:", error);
+  document.getElementById("pdf-error").style.display = "block";
+});
+</script>
+
 </body>
 </html>
